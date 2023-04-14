@@ -1,0 +1,33 @@
+{
+  "name": "indio-services",
+  "packageManager": "yarn@3.5.0",
+  "version": "0.0.5",
+  "private": true,
+  "dependencies": {
+    "axios": "^0.21.0",
+    "dayjs": "^1.10.7",
+    "eslint": "^8.38.0",
+    "immer": "^7.0.8",
+    "jsonapi-serializer": "^3.6.6",
+    "jwt-decode": "^3.1.2",
+    "lodash": "^4.17.21",
+    "numeral": "^2.0.6",
+    "typescript": "^4.1.5"
+  },
+  "scripts": {
+    "start": "craco start",
+    "build": "craco build"
+  },
+  "devDependencies": {
+    "@types/jest": "^26.0.15",
+    "@types/lodash": "^4.14.168",
+    "@types/node": "^12.0.0",
+    "@types/numeral": "^2.0.1",
+    "@yarnpkg/sdks": "^3.0.0-rc.42",
+    "env-cmd": "^10.1.0",
+    "eslint-config-prettier": "7.2.0",
+    "eslint-plugin-prettier": "^3.3.1",
+    "less": "^4.1.2",
+    "prettier": "^2.5.1"
+  }
+}
