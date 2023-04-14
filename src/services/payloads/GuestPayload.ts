@@ -67,5 +67,3 @@ export class GuestPayload extends PayloadBase {
   outstandingBalance?: number
   lifetimeSpent?: number
 }
-
-export const GuestCreatePayloadAttributes = Object.keys(GuestPayload.new());
