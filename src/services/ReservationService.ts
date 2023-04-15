@@ -1,14 +1,19 @@
-import { Serializer } from 'jsonapi-serializer';
+import { JsonApiClient } from './client/JsonApiClient';
 import { TableInstance } from './interfaces/TableInstance';
+import { Serializer } from 'jsonapi-serializer';
 import { ReservationPayload, CreateReservationPayload, CreateReservationPayloadAttributes, CreateReservationResponse } from './payloads/ReservationPayload';
 import { QuotePayload, QuoteResponse } from './payloads/QuotePayload';
 import { CalendarEventPayload } from './payloads/CalendarEventPayload';
 import { TransactionPayload } from './payloads/TransactionsPayload';
 import { SiteHoldPayload } from './payloads/SiteHoldPayload';
-import { makeGet, makeGetForTable, makeHackyPost, makePatch, makePost, makePut } from './util';
+import { ax, makeGet, makeGetForTable, makeHackyPost, makePatch, makePut } from './util';
 // import { Filters } from 'view-components/dropdowns/models/Filters';
 type Filters = any;
 import dayjs from 'dayjs';
+
+const client = new JsonApiClient(ReservationPayload, ax, 'reservation_summaries');
+const quoteClient = new JsonApiClient(QuotePayload, ax, 'quotes');
+const transactionClient = new JsonApiClient(TransactionPayload, ax, 'transactions');
 
 const serializer = new Serializer('reservation', {
   attributes: CreateReservationPayloadAttributes, keyForAttribute: 'snake_case'
@@ -16,8 +21,8 @@ const serializer = new Serializer('reservation', {
 
 export class ReservationService {
   static getById = async (id: string) => {
-    let entity: ReservationPayload = await makeGet(`/api/v1/reservation_summaries/${id}`);
-    return entity;  
+    const result = await client.getById(id);
+    return result;
   }
 
   static getSiteHoldById = async (id: string) => {
@@ -26,35 +31,25 @@ export class ReservationService {
   }
 
   static getByField = async (field: 'site_id' | 'guest_id', value: string, pageNumber: number, pageSize: number) => {
-    let params = `page[number]=${pageNumber}&page[size]=${pageSize}`;
-    params += `&sort=-arrival_date&filter[${field}]=${value}`;
-    let entities: any[] = await makeGet(`/api/v1/reservations?${params}`);
-    const payloads = entities.map(item => ReservationPayload.new(item));
-    return payloads;
+    const params = {
+      filter: { [field]: value },
+      page: { number: pageNumber, size: pageSize },
+      sort: '-arrival_date',
+    }
+    const result = await client.find(params);
+    return result;
   }
 
   static getQuote = async (quote: QuotePayload) => {
-    const serializer = new Serializer('quotes', {
-      attributes: Object.keys(quote), keyForAttribute: 'snake_case'
-    });
-    const payload = serializer.serialize(quote);
-    let entity = await makePost('/api/v1/quotes', payload);
+    let entity = await quoteClient.post(null, quote, QuoteResponse);
     // Hack when returns 500
     entity = Array.isArray(entity) ? null : entity;
-    return entity as QuoteResponse;
+    return entity;
   }
 
   static createOrUpdate = async (entity: CreateReservationPayload) => {
-    const serializer = new Serializer('reservations', {
-      attributes: Object.keys(entity), keyForAttribute: 'snake_case'
-    });
-    const payload = serializer.serialize(entity);
-    let response: ReservationPayload;
-    if (entity.id) {
-      response = await makePut(`/api/v1/reservations/${entity.id}`, payload);
-    } else {
-      response = await makePost('/api/v1/reservations', payload);
-    }
+    const payload = ReservationPayload.new(entity);
+    let response = await client.createOrUpdate(payload);
     if (response?.id) {
       // TODO: Hack due API bug
       response = await ReservationService.getById(response.id);
@@ -78,9 +73,9 @@ export class ReservationService {
   }
 
   static applyAction = async (id: string, action: string) => {
-    const payload = serializer.serialize({ id, action });
-    let response: CreateReservationResponse = await makePatch(`/api/v1/reservations/${id}`, payload);
-    return response;
+    const payload = { id, action };
+    const result = await client.updatePartial(id, payload);
+    return result;
   }
 
   static sendConfirmationEmail = async (id: string) => {
@@ -171,17 +166,21 @@ export class ReservationService {
   }
 
   static getAll = async (parkId: string, search: string) => {
-    let query = `filter[park_id]=${parkId}&page[size]=10`;
-    if (search) {
-      query += `&filter[q][contains]=${search}`;
+    const params = {
+      filter: { parkId, q: { contains: search } },
+      page: { number: 1, size: 10 },
     }
-    let entities: ReservationPayload[] = await makeGet(`/api/v1/reservation_summaries?${query}`);
-    return entities;
+    const result = await client.getAll(params);
+    return result.entities;
   }
 
   static getTransactions = async (id: string) => {
-    const query = `filter[reservation_id]=${id}&filter[voided]=false&sort=created_at`;
-    let entities: TransactionPayload[] = await makeGet(`/api/v1/transactions?${query}`);
-    return entities;
+    const params = {
+      filter: { reservationId: id, voided: false },
+      page: { number: 1, size: 10 },
+      sort: 'created_at',
+    }
+    const result = await transactionClient.find(params);
+    return result;
   }
 }

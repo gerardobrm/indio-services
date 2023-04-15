@@ -59,16 +59,15 @@ export class JsonApiClient<T extends Payload> {
     return { entities, total };
   }
 
-  async find(...params: unknown[]): Promise<T[]>;
-  async find(params: Params) {
+  async find(params?: GenericParams) {
     const filter = params ?? null;
     const jsonParams = this.adaptFilter(filter);
     const { entities } = await this.getData(jsonParams);
     return entities;
   }
 
-  private adaptFilter(params: Params) {
-    let result = params;
+  private adaptFilter(params: GenericParams) {
+    let result: JsonApiParams = params;
     if (params) {
       const firstKey = Object.keys(params)[0];
       if (firstKey !== 'filter') {
@@ -80,14 +79,8 @@ export class JsonApiClient<T extends Payload> {
     return result;
   }
 
-  public findForTable(table: TableInstance, ...args: Args): Promise<T[]>;
-  public findForTable(table: TableInstance, ...params: never[]) {
-    const [filter] = params ?? [];
-    const jsonParams = this.adaptFilter(filter);
-    return this._findForTable(table, jsonParams);
-  }
-
-  private async _findForTable(table: TableInstance, params?: JsonApiParams) {
+  async findForTable(table: TableInstance, genParams: GenericParams) {
+    const params = this.adaptFilter(genParams);
     const { pagination, sorting, search } = table;
     const { setLoading, setPagination } = table.setters;
     const allParams = { ...params,
@@ -193,9 +186,9 @@ export class JsonApiClient<T extends Payload> {
 
 type Args = [arg1?: any, arg2?: any, arg3?: any];
 
-type Params = {
+type GenericParams = {
   [k: string]: string | Filter,
-  filter: Filter,
+  filter?: Filter,
 }
 
 type JsonApiParams = {

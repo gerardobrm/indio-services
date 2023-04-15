@@ -1,26 +1,30 @@
-import { makeGet } from './util';
-import { ClientPayload, UserRolePayload } from './payloads/ClientPayload';
+import { JsonApiClient } from './client/JsonApiClient';
+import { ax } from './util';
+import { ClientPayload } from './payloads/ClientPayload';
+
+const client = new JsonApiClient(ClientPayload, ax, 'clients');
+const userRolesClient = new JsonApiClient(ClientPayload, ax, 'user_roles');
 
 export class ClientService {
   static find = async () => {
-    let entities: any[] = await makeGet('/api/v1/clients');
-    console.log('clients:', entities);
-    return entities;
+    const result = await client.find();
+    return result;
   }
 
   static getAll = async () => {
-    let entities: ClientPayload[] = await makeGet('/api/v1/clients');
-    return entities;
+    const result = await client.getAll();
+    return result.entities;
   }
 
   static getUsers = async () => {
-    let entities: UserRolePayload[] = await makeGet('/api/v1/user_roles?filter[resource_type]=Client');
-    return entities;
+    const params = { filter: { resource_type: 'Client' } };
+    const result = await userRolesClient.find(params);
+    return result;
   }
 
   static getByUser = async (userName: string) => {
-    const query = `filter[user_name]=${userName}`;
-    let entities: UserRolePayload[] = await makeGet(`/api/v1/user_roles?${query}`);
-    return entities;
+    const params = { filter: { user_name: userName } };
+    const result = await userRolesClient.find(params);
+    return result;
   }
 }
