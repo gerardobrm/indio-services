@@ -16,5 +16,3 @@ export class UserRolePayload extends PayloadBase {
   roleId: string
   // roleName: Role
 }
-
-export const ClientPayloadAttributes = Object.keys(ClientPayload.new());
