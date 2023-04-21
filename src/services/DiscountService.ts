@@ -1,40 +1,50 @@
-import { ax, makeDelete, makeGetForTable, makeGet, makePut, makePost } from './util';
+import { ax } from './util';
 import { JsonApiClient } from './client/JsonApiClient';
 import { TableInstance } from './interfaces/TableInstance';
 import { DiscountPayload } from './payloads/DiscountPayload';
 
 const client = new JsonApiClient(DiscountPayload, ax, 'discounts');
-
 export class DiscountService {
-  static getById = async (id: string) => this.getByIds([id]);
+
+  static getById = async (id: string) => {
+    const result = client.getById(id);
+    return result
+  }
 
   static getByIds = async (ids: string[]) => {
-    const query = `filter[id]=${ids.join(',')}`;
-    let entities = await makeGet<DiscountPayload[]>(`/api/v1/discounts?${query}`);
-    return entities;
+    const params = {
+      filter: { id: ids.join(',') },
+    };
+    const result = await client.getAll(params);
+    return result.entities
   }
 
   static createOrUpdate = async (entity: DiscountPayload) => {
-    const payload = client.createOrUpdate(entity);
-    if (entity.id) {
-      await makePut(`/api/v1/discounts/${entity.id}`, payload);
-    } else {
-      await makePost('/api/v1/discounts', payload);
-    }
+    const result = client.createOrUpdate(entity);
+    return result
   }
 
-  static delete = async (id: string) => await makeDelete(`/api/v1/discounts/${id}`);
+  static delete = async (id: string) => {
+    const result = client.delete(id);
+    return result
+  }
 
   static find = async (parkId: string, table: TableInstance) => {
-    const query = `filter[park_id]=${parkId}`;
-    let entities = await makeGetForTable<DiscountPayload[]>('/api/v1/discounts', query, table);
-    return entities;
+    if (!table.sorting) {
+      table.setters.setSorting({ field: 'created_at', order: 'descend' });
+    }
+    const result = await client.findForTable(table, { parkId });
+    return result
   }
 
-  static getAll = async (parkId: string) => {
-    const query = `filter[park_id]=${parkId}&page[size]=200`;
-    let entities: DiscountPayload[] = await makeGet(`/api/v1/discounts?${query}`);
-    return entities;
+  static getAll = async (search: string, parkId: string) => {
+    const params = {
+      filter: { parkId, q: { contains: search } },
+      page: { number: 1, size: 15 },
+      sort: '-created_at',
+    }
+    const result = await client.getAll(params);
+    return result.entities
   }
-  
+
 }
