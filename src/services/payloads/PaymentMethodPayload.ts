@@ -1,6 +1,6 @@
 import { PayloadBase } from './PayloadBase';
 
-export abstract class PaymentMethodPayload extends PayloadBase {
+export class PaymentMethodPayload extends PayloadBase {
   id: string
   guestId: string
   type: 'CardPaymentMethod' | 'CashPaymentMethod' | 'CheckPaymentMethod'
@@ -29,6 +29,7 @@ export class CardPaymentMethodPayload extends PaymentMethodPayload {
   country: string
   tokenized: boolean
   recordOnly: boolean
+
 }
 
 export class CashPaymentMethodPayload extends PaymentMethodPayload {
@@ -38,7 +39,3 @@ export class CashPaymentMethodPayload extends PaymentMethodPayload {
 export class CheckPaymentMethodPayload extends PaymentMethodPayload {
   type: 'CheckPaymentMethod'
 }
-
-// export type PaymentMethodPayload = CardPaymentMethodPayload & CashPaymentMethodPayload & CheckPaymentMethodPayload;
-
-export const PaymentMethodPayloadAttributes = Object.keys(CardPaymentMethodPayload.new());
