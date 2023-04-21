@@ -20,5 +20,4 @@ export class DiscountPayload extends PayloadBase{
 
 export const DiscountTypeValues = ['regular', 'code', 'loyalty'] as const;
 export type DiscountType = typeof DiscountTypeValues[number];
-
 export const DiscountAttributes = Object.keys(DiscountPayload.new());

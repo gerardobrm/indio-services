@@ -1,16 +1,12 @@
-import { TableInstance } from '../interfaces/TableInstance';
-import { Serializer } from 'jsonapi-serializer';
-import { DiscountPayload, DiscountAttributes } from '../payloads/DiscountPayload';
-import { makeGetForTable, makeGet, makePut, makePost, makeDelete } from '../util';
+import { ax, makeDelete, makeGetForTable, makeGet, makePut, makePost } from './util';
+import { JsonApiClient } from './client/JsonApiClient';
+import { TableInstance } from './interfaces/TableInstance';
+import { DiscountPayload } from './payloads/DiscountPayload';
 
-const serializer = new Serializer('discounts', {
-  attributes: DiscountAttributes, keyForAttribute: 'snake_case'
-});
+const client = new JsonApiClient(DiscountPayload, ax, 'discounts');
 
 export class DiscountService {
-  static getById = async (id: string) => {
-    DiscountService.getByIds([id]);
-  }
+  static getById = async (id: string) => this.getByIds([id]);
 
   static getByIds = async (ids: string[]) => {
     const query = `filter[id]=${ids.join(',')}`;
@@ -18,23 +14,16 @@ export class DiscountService {
     return entities;
   }
 
-  static create = async (entity: any) => {
-  }
-  static update = async (id: number, entity: any) => {
-  }
-
-  static delete = async (id: string) => {
-    await makeDelete(`/api/v1/discounts/${id}`);
-  }
-
   static createOrUpdate = async (entity: DiscountPayload) => {
-    const payload = serializer.serialize(entity);
+    const payload = client.createOrUpdate(entity);
     if (entity.id) {
       await makePut(`/api/v1/discounts/${entity.id}`, payload);
     } else {
       await makePost('/api/v1/discounts', payload);
     }
   }
+
+  static delete = async (id: string) => await makeDelete(`/api/v1/discounts/${id}`);
 
   static find = async (parkId: string, table: TableInstance) => {
     const query = `filter[park_id]=${parkId}`;
@@ -47,4 +36,5 @@ export class DiscountService {
     let entities: DiscountPayload[] = await makeGet(`/api/v1/discounts?${query}`);
     return entities;
   }
+  
 }
