@@ -12,7 +12,7 @@ export class RateService {
     return result;
   }
 
-  static createOrUpdateCard = async (entity: RatePayload) => {
+  static createOrUpdate = async (entity: RatePayload) => {
     const result = await client.createOrUpdate(entity);
     return result;
   }
@@ -27,7 +27,7 @@ export class RateService {
 
   static getAll = async (search: string, parkId: string) => {
     const params = {
-      filter: { park_id: parkId, q: { contains: search } },
+      filter: { parkId, q: { contains: search } },
       page: { number: 1, size: 200 },
       sort: '-created_at',
     }
@@ -37,7 +37,7 @@ export class RateService {
   
   static getBySiteTypeId = async (siteTypeId: string, activeOnly: boolean) => {
     const params = {
-      filter: { site_type_id: siteTypeId },
+      filter: { siteTypeId },
       include: 'discounts'
     };
     if (activeOnly) {
