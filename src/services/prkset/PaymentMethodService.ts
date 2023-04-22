@@ -13,12 +13,12 @@ export class PaymentMethodService {
   }
 
   static setPrimary = async (id: string) => {
-    const result = await client.patch(id, {id: id, primary: true});
+    const result = await client.patch(id, { id, primary: true });
     return result
   }
 
   static getByGuestId = async (guestId: string) => {
-    const params = { filter: {guest_id: guestId} }
+    const params = { filter: { guestId } }
     const result = await client.getAll(params);
     return result.entities
   }
