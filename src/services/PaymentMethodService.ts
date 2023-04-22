@@ -43,7 +43,10 @@ export class PaymentMethodService {
 
   static getAll = async (search: string, guestId: string) => {
     const params = {
-      filter: { guestId, q: { contains: search } },
+      filter: { 
+        guest_id: guestId, 
+        q: { contains: search } 
+      },
       page: { number: 1, size: 15 },
       sort: '-created_at',
     }
