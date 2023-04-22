@@ -1,7 +1,7 @@
-import { ax } from './util';
-import { JsonApiClient } from './client/JsonApiClient';
-import { TableInstance } from './interfaces/TableInstance';
-import { DiscountPayload } from './payloads/DiscountPayload';
+import { ax } from '../util';
+import { JsonApiClient } from '../client/JsonApiClient';
+import { TableInstance } from '../interfaces/TableInstance';
+import { DiscountPayload } from '../payloads/DiscountPayload';
 
 const client = new JsonApiClient(DiscountPayload, ax, 'discounts');
 export class DiscountService {
