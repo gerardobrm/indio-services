@@ -29,7 +29,7 @@ export class SiteTypeService {
 
   static find = async (parkId: string, table: TableInstance) => {
     const params = {
-      filter: {park_id: parkId},
+      filter: { parkId },
       include: 'primary_photo',
     }
     const result = await client.findForTable(table, params);
