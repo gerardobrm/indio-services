@@ -1,7 +1,7 @@
-import { ax } from './util';
-import { TableInstance } from './interfaces/TableInstance';
-import { JsonApiClient } from './client/JsonApiClient';
-import { CardPaymentMethodPayload, PaymentMethodPayload } from './payloads/PaymentMethodPayload';
+import { ax } from '../util';
+import { TableInstance } from '../interfaces/TableInstance';
+import { JsonApiClient } from '../client/JsonApiClient';
+import { CardPaymentMethodPayload, PaymentMethodPayload } from '../payloads/PaymentMethodPayload';
 
 const client = new JsonApiClient(PaymentMethodPayload, ax, 'payment_methods');
 
