@@ -161,16 +161,6 @@ export class JsonApiClient<T extends Payload> {
     }
   }
 
-  async delete(id: string) {
-    const { api, entityCtor, resourceName } = this;
-    const response = await api.delete<Response>(`${resourceName}/${id}`);
-    const { data } = response.data;
-    if (data) {
-      const entities = plainToInstance(entityCtor, data);
-      return entities;
-    }
-  }
-
   async get<P>(url: string, ctor: ClassConstructor<P>) {
     const response = await this.api.get<Response>(url);
     const data = await this.deserializer.deserialize(response.data);
@@ -191,6 +181,27 @@ export class JsonApiClient<T extends Payload> {
     const data = await this.deserializer.deserialize(response.data);
     const output = plainToInstance(responseCtor, data);
     return output;
+  }
+
+  async patch(id: string, payload: Partial<T>) {
+    const { api, entityCtor, resourceName } = this;
+    const rawPayload = this.serializer.serialize(payload);
+    const response = await api.patch<Response>(`${resourceName}/${id}`, rawPayload);
+    const { data } = response.data;
+    if (data) {
+      const entities = plainToInstance(entityCtor, data);
+      return entities;
+    }
+  }
+
+  async delete(id: string) {
+    const { api, entityCtor, resourceName } = this;
+    const response = await api.delete<Response>(`${resourceName}/${id}`);
+    const { data } = response.data;
+    if (data) {
+      const entities = plainToInstance(entityCtor, data);
+      return entities;
+    }
   }
 }
 

@@ -40,11 +40,11 @@ export class DiscountService {
   static getAll = async (search: string, parkId: string) => {
     const params = {
       filter: { parkId, q: { contains: search } },
-      page: { number: 1, size: 15 },
+      page: { number: 1, size: 200 },
       sort: '-created_at',
     }
     const result = await client.getAll(params);
     return result.entities
   }
-
+  
 }
