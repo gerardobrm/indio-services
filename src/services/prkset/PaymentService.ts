@@ -1,7 +1,7 @@
-import { TableInstance } from './interfaces/TableInstance';
+import { TableInstance } from '../interfaces/TableInstance';
 import { PaymentPayload } from 'services/payloads/PaymentPayload';
-import { ax } from './util';
-import { JsonApiClient } from './client/JsonApiClient';
+import { ax } from '../util';
+import { JsonApiClient } from '../client/JsonApiClient';
 
 const client = new JsonApiClient(PaymentPayload, ax, 'payments');
 
