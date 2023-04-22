@@ -19,7 +19,7 @@ export class PaymentService {
 
   static getByReservationId = async (reservationId: string) => {
     const params = {
-      filter: { reservation_id: reservationId},
+      filter: { reservationId },
       include: 'refunds'
     };
     const result = await client.getAll(params);
@@ -27,18 +27,18 @@ export class PaymentService {
   };
 
   static getByGuestId = async (guestId: string) => {
-    const params = { filter: { guest_id: guestId } };
+    const params = { filter: { guestId } };
     const result = await client.getAll(params);
     return result.entities;
   };
 
   static getByOrderId = async (orderId: string) => {
-    const params = { filter: { order_id: orderId } };
+    const params = { filter: { orderId } };
     const result = await client.getAll(params);
     return result.entities;
   };
 
-  static createOrUpdateCard = async (entity: PaymentPayload) => {
+  static createOrUpdate = async (entity: PaymentPayload) => {
     const result = await client.createOrUpdate(entity);
     return result;
   }
