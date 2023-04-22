@@ -2,7 +2,7 @@ import { UniversalSiteType } from 'interfaces/UniversalSiteType';
 import { ParkPayload } from './ParkPayload';
 import { PhotoPayload } from './PhotoPayload';
 
-export type SiteTypePayload = {
+export class SiteTypePayload  {
   id: string;
   park: ParkPayload;
   parkId: string;
@@ -34,10 +34,3 @@ export type SiteTypePayload = {
   createdAt: string;
   updatedAt: string;
 };
-
-type Keys = keyof SiteTypePayload;
-export const SiteTypePayloadAttributes: Keys[] = [
-  'parkId', 'type', 'name', 'code', 'description', 'bookable', 'active',
-  'altName', 'altDescription', 'primaryPhotoId', 'rateSummary', 'displayOrder',
-  'maxAdults', 'maxChildren', 'maxPets', 'maxOccupancy',
-];
