@@ -27,12 +27,8 @@ export class SiteService {
   }
 
   static getAll = async (parkId: string, siteTypeId?: string) => {
-    const filter = {
-      park_id: parkId,
-      ...(siteTypeId && { site_type_id: siteTypeId }),
-    };
     const params = {
-      filter,
+      filter: { parkId, ...(siteTypeId && { siteTypeId })},
       sort: 'site_number',
       page: { size: 200 },
     };
@@ -42,13 +38,13 @@ export class SiteService {
 
   static getMaxSiteNumber = async (parkId: string, siteTypeId?: string) => {
     const params = {
-      filter: { park_id: parkId },
+      filter: { parkId },
       sort: '-site_number',
       page: { size: 5 },
       fields: { sites: 'name,site_number,site_type_id' }
     }
     if (siteTypeId) {
-      params.filter['site_type_id'] = siteTypeId;
+      params.filter['siteTypeId'] = siteTypeId;
     }
     const result = await client.getAll(params);
     const lastNumbers = result.entities.map(x => x.siteNumber).filter(x => x.match(/^\d+$/));
@@ -59,13 +55,13 @@ export class SiteService {
   static getAllLookup = async (parkId: string, siteTypeId?: string) => {
     const fields = SiteMiniPayload.fields().map(snakeCase);
     const params = {
-      filter: { park_id: parkId },
+      filter: { parkId },
       sort: 'site_number',
       page: { size: 200 },
       fields: { sites: fields.join(',') }
     };
     if (siteTypeId) {
-      params.filter['site_type_id'] = siteTypeId;
+      params.filter['siteTypeId'] = siteTypeId;
     }
     const result = await client.getAll(params);
     return result.entities;
@@ -90,7 +86,7 @@ export class SiteService {
   static findWithWorkarround = async (parkId: string, table: TableInstance) => {
     table.setters.setLoading(true);
     const params = {
-      filter: { park_id: parkId },
+      filter: { parkId },
       sort: 'site_number',
       page: { size: 200 },
     };
@@ -113,8 +109,8 @@ export class SiteService {
     const filterValue = { date_range: dateRange, ignored_reservation_ids: ignoredReservationIds };
     const params = {
       filter: {
-        site_type_id: siteTypeId,
-        available_between: JSON.stringify(filterValue)
+        siteTypeId,
+        availableBetween: JSON.stringify(filterValue)
       },
       sort: 'site_number',
       page: { size: 200 },
