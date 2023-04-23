@@ -1,7 +1,7 @@
-import { TableInstance } from './interfaces/TableInstance';
-import { RatePayload } from './payloads/RatePayload';
-import { JsonApiClient } from './client/JsonApiClient';
-import { ax } from './util';
+import { TableInstance } from '../interfaces/TableInstance';
+import { RatePayload } from '../payloads/RatePayload';
+import { JsonApiClient } from '../client/JsonApiClient';
+import { ax } from '../util';
 
 const client = new JsonApiClient(RatePayload, ax, 'rates');
 
