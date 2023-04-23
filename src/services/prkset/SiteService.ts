@@ -1,8 +1,8 @@
-import { SiteMiniPayload, SitePayload } from './payloads/SitePayload';
-import { TableInstance } from './interfaces/TableInstance';
-import { JsonApiClient } from './client/JsonApiClient';
+import { SiteMiniPayload, SitePayload } from '../payloads/SitePayload';
+import { TableInstance } from '../interfaces/TableInstance';
+import { JsonApiClient } from '../client/JsonApiClient';
 import { snakeCase } from 'lodash';
-import { ax } from './util';
+import { ax } from '../util';
 import dayjs from 'dayjs';
 
 const client = new JsonApiClient(SitePayload, ax, 'sites');
