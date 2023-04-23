@@ -13,7 +13,7 @@ export class PaymentService {
   }
 
   static applyAction = async (id: string, action: string) => {
-    const result = await client.patch(id, { action } );
+    const result = await client.patch(id, { id, action } );
     return result;
   }
 
