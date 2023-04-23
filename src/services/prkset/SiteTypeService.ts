@@ -1,9 +1,9 @@
-import { TableInstance } from './interfaces/TableInstance';
-import { JsonApiClient } from './client/JsonApiClient';
+import { TableInstance } from '../interfaces/TableInstance';
+import { JsonApiClient } from '../client/JsonApiClient';
 import { PhotoService } from './PhotoService';
-import { SiteTypePayload } from './payloads';
+import { SiteTypePayload } from '../payloads';
 import { message } from 'antd';
-import { ax } from './util';
+import { ax } from '../util';
 
 const client = new JsonApiClient(SiteTypePayload, ax, 'site_types');
 
