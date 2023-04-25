@@ -22,20 +22,20 @@ export class PaymentService {
       filter: { reservationId },
       include: 'refunds'
     };
-    const result = await client.getAll(params);
-    return result.entities;
+    const result = await client.find(params);
+    return result;
   };
 
   static getByGuestId = async (guestId: string) => {
     const params = { filter: { guestId } };
-    const result = await client.getAll(params);
-    return result.entities;
+    const result = await client.find(params);
+    return result;
   };
 
   static getByOrderId = async (orderId: string) => {
     const params = { filter: { orderId } };
-    const result = await client.getAll(params);
-    return result.entities;
+    const result = await client.find(params);
+    return result;
   };
 
   static createOrUpdate = async (entity: PaymentPayload) => {
@@ -44,14 +44,10 @@ export class PaymentService {
   }
 
   static delete = async (id: string) => {
-    const result = await client.delete(id);
-    return result;
+     await client.delete(id);
   }
 
   static find = async (guestId: string, table: TableInstance) => {
-    if (!table.sorting) {
-      table.setters.setSorting({ field: 'created_at', order: 'descend' });
-    }
     const result = await client.findForTable(table, { guestId });
     return result
   }
@@ -60,7 +56,6 @@ export class PaymentService {
     const params = {
       filter: { guestId, q: { contains: search } },
       page: { number: 1, size: 15 },
-      sort: '-created_at',
     }
     const result = await client.getAll(params);
     return result.entities
