@@ -39,3 +39,5 @@ export class CashPaymentMethodPayload extends PaymentMethodPayload {
 export class CheckPaymentMethodPayload extends PaymentMethodPayload {
   type: 'CheckPaymentMethod'
 }
+
+export const PaymentMethodPayloadAttributes = Object.keys(CardPaymentMethodPayload.new());

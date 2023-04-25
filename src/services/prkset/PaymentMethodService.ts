@@ -29,8 +29,7 @@ export class PaymentMethodService {
   }
 
   static delete = async (id: string) => {
-    const result = await client.delete(id)
-    return result
+     await client.delete(id);
   }
 
   static find = async (guestId: string, table: TableInstance) => {
@@ -38,11 +37,8 @@ export class PaymentMethodService {
       return result
   }
 
-  static getAll = async (search: string, guestId: string) => {
-    const params = {
-      filter: { guestId, q: { contains: search } },
-      page: { number: 1, size: 15 },
-    }
+  static getAll = async (guestId: string) => {
+    const params = { filter: { guestId } };
     const result = await client.getAll(params);
     return result.entities
   }
