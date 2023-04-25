@@ -52,11 +52,8 @@ export class PaymentService {
     return result
   }
 
-  static getAll = async (search: string, guestId: string) => {
-    const params = {
-      filter: { guestId, q: { contains: search } },
-      page: { number: 1, size: 15 },
-    }
+  static getAll = async (guestId: string) => {
+    const params = { filter: { guestId }  };
     const result = await client.getAll(params);
     return result.entities
   }
