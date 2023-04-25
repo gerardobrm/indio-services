@@ -19,8 +19,8 @@ export class PaymentMethodService {
 
   static getByGuestId = async (guestId: string) => {
     const params = { filter: { guestId } }
-    const result = await client.getAll(params);
-    return result.entities
+    const result = await client.find(params);
+    return result
   }
 
   static createOrUpdateCard = async (entity: CardPaymentMethodPayload) => {
@@ -34,9 +34,6 @@ export class PaymentMethodService {
   }
 
   static find = async (guestId: string, table: TableInstance) => {
-      if (!table.sorting) {
-        table.setters.setSorting({ field: 'created_at', order: 'descend' });
-      }
       const result = await client.findForTable(table, { guestId });
       return result
   }
@@ -45,7 +42,6 @@ export class PaymentMethodService {
     const params = {
       filter: { guestId, q: { contains: search } },
       page: { number: 1, size: 15 },
-      sort: '-created_at',
     }
     const result = await client.getAll(params);
     return result.entities
