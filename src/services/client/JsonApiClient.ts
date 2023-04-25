@@ -195,13 +195,8 @@ export class JsonApiClient<T extends Payload> {
   }
 
   async delete(id: string) {
-    const { api, entityCtor, resourceName } = this;
-    const response = await api.delete<Response>(`${resourceName}/${id}`);
-    const { data } = response.data;
-    if (data) {
-      const entities = plainToInstance(entityCtor, data);
-      return entities;
-    }
+    const { api, resourceName } = this;
+    await api.delete<Response>(`${resourceName}/${id}`);
   }
 }
 

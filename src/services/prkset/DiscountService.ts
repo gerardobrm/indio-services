@@ -15,8 +15,8 @@ export class DiscountService {
     const params = {
       filter: { id: ids.join(',') },
     };
-    const result = await client.getAll(params);
-    return result.entities
+    const result = await client.find(params);
+    return result
   }
 
   static createOrUpdate = async (entity: DiscountPayload) => {
@@ -25,8 +25,7 @@ export class DiscountService {
   }
 
   static delete = async (id: string) => {
-    const result = client.delete(id);
-    return result
+    await client.delete(id);
   }
 
   static find = async (parkId: string, table: TableInstance) => {
@@ -41,7 +40,6 @@ export class DiscountService {
     const params = {
       filter: { parkId, q: { contains: search } },
       page: { number: 1, size: 200 },
-      sort: '-created_at',
     }
     const result = await client.getAll(params);
     return result.entities
