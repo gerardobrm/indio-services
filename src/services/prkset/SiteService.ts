@@ -46,8 +46,8 @@ export class SiteService {
     if (siteTypeId) {
       params.filter['siteTypeId'] = siteTypeId;
     }
-    const result = await client.getAll(params);
-    const lastNumbers = result.entities.map(x => x.siteNumber).filter(x => x.match(/^\d+$/));
+    const result = await client.find(params);
+    const lastNumbers = result.map(x => x.siteNumber).filter(x => x.match(/^\d+$/));
     const max = Math.max(0, ...lastNumbers.map(x => +x));
     return max;
   }
@@ -63,39 +63,44 @@ export class SiteService {
     if (siteTypeId) {
       params.filter['siteTypeId'] = siteTypeId;
     }
-    const result = await client.getAll(params);
-    return result.entities;
+    const result = await client.find(params);
+    return result;
   }
 
   static getDrawerInfo = async (siteId: string) => {
-    const params = {
-      extra_fields: { sites: 'most_recent_reservation' }
-    }
+    const params = { extra_fields: { sites: 'most_recent_reservation' }};
     const result = await client.getById(siteId, params);
     return result;
   }
 
   static find = async (parkId: string, table: TableInstance) => {
-    if (!table.sorting) {
-      table.setters.setSorting({ field: 'created_at', order: 'descend' });
+    const params = { filter: { parkId } };
+
+    if (table.search) {
+      params.filter['q'] = { contains: table.search };
     }
-    const result = await client.findForTable(table, { parkId });
+    if (!table.sorting) {
+      table.setters.setSorting({field: 'site_number', order: 'ascend'});
+    }
+    const result = client.findForTable(table, params);
     return result
   }
 
+
   static findWithWorkarround = async (parkId: string, table: TableInstance) => {
-    table.setters.setLoading(true);
     const params = {
       filter: { parkId },
       sort: 'site_number',
       page: { size: 200 },
     };
-
+    
     if (table.search) {
       params.filter['q'] = { contains: table.search }
     }
-    const { entities } = await client.getAll(params);
-    const sortedSites = sortSitesByNumber(entities);
+
+    table.setters.setLoading(true);
+    const response = await client.find(params);
+    const sortedSites = sortSitesByNumber(response);
     const start = (table.pagination.current - 1) * table.pagination.pageSize;
     const end = (table.pagination.current) * table.pagination.pageSize;
     table.setters.setPagination({ ...table.pagination, total: sortedSites.length });
@@ -114,10 +119,9 @@ export class SiteService {
       },
       sort: 'site_number',
       page: { size: 200 },
-
     }
-    const result = await client.getAll(params);
-    return result.entities;
+    const result = await client.find(params);
+    return result;
   }
 }
 
