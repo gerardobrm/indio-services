@@ -34,3 +34,10 @@ export class SiteTypePayload  {
   createdAt: string;
   updatedAt: string;
 };
+
+type Keys = keyof SiteTypePayload;
+export const SiteTypePayloadAttributes: Keys[] = [
+  'parkId', 'type', 'name', 'code', 'description', 'bookable', 'active',
+  'altName', 'altDescription', 'primaryPhotoId', 'rateSummary', 'displayOrder',
+  'maxAdults', 'maxChildren', 'maxPets', 'maxOccupancy',
+];

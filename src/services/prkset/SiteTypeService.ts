@@ -36,13 +36,13 @@ export class SiteTypeService {
     return result
   }
 
-  static getAll = async (search: string, parkId: string) => {
+  static getAll = async (parkId: string) => {
     const params = {
-      filter: { parkId, q: { contains: search } },
+      filter: { parkId },
       page: { size: 200 },
-      sort: '-created_at',
     }
     const result = await client.getAll(params);
     return result.entities
   }
+  
 }
