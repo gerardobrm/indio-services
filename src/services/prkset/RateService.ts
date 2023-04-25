@@ -29,7 +29,6 @@ export class RateService {
     const params = {
       filter: { parkId, q: { contains: search } },
       page: { number: 1, size: 200 },
-      sort: '-created_at',
     }
     const result = await client.getAll(params);
     return result.entities
@@ -43,8 +42,8 @@ export class RateService {
     if (activeOnly) {
       params.filter['active'] = true;
     }
-    const result = await client.getAll(params);
-    return result.entities;
+    const result = await client.find(params);
+    return result;
   };
   
 }
