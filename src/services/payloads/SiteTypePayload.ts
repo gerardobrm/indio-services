@@ -2,7 +2,7 @@ import { UniversalSiteType } from 'interfaces/UniversalSiteType';
 import { ParkPayload } from './ParkPayload';
 import { PhotoPayload } from './PhotoPayload';
 
-export type SiteTypePayload = {
+export class SiteTypePayload  {
   id: string;
   park: ParkPayload;
   parkId: string;

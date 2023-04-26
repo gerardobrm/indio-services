@@ -1,18 +1,17 @@
-import { message } from 'antd';
 import { TableInstance } from '../interfaces/TableInstance';
-import { Serializer } from 'jsonapi-serializer';
-import { SiteTypePayload, SiteTypePayloadAttributes } from '../payloads/SiteTypePayload';
-import { PhotoService } from '../PhotoService';
-import { makeGet, makeGetForTable, makePost, makePut } from '../util';
+import { JsonApiClient } from '../client/JsonApiClient';
+import { PhotoService } from './PhotoService';
+import { SiteTypePayload } from '../payloads';
+import { message } from 'antd';
+import { ax } from '../util';
 
-const serializer = new Serializer('site_types', {
-  attributes: SiteTypePayloadAttributes, keyForAttribute: 'snake_case'
-});
+const client = new JsonApiClient(SiteTypePayload, ax, 'site_types');
 
 export class SiteTypeService {
+
   static getById = async (id: string) => {
-    let entity: SiteTypePayload = await makeGet(`/api/v1/site_types/${id}`);
-    return entity;
+    const result = await client.getById(id);
+    return result;
   }
 
   static createOrUpdate = async (entity: SiteTypePayload) => {
@@ -24,23 +23,26 @@ export class SiteTypeService {
         message.error('An error occurred saving Photo');
       }
     }
-    const payload = serializer.serialize(entity);
-    if (entity.id) {
-      await makePut(`/api/v1/site_types/${entity.id}`, payload);
-    } else {
-      await makePost('/api/v1/site_types', payload);
-    }
+    const result = await client.createOrUpdate(entity);
+    return result;
   }
 
   static find = async (parkId: string, table: TableInstance) => {
-    const query = `filter[park_id]=${parkId}&include=primary_photo`;
-    let entities = await makeGetForTable<SiteTypePayload[]>('/api/v1/site_types', query, table);
-    return entities;
+    const params = {
+      filter: { parkId },
+      include: 'primary_photo',
+    }
+    const result = await client.findForTable(table, params);
+    return result
   }
 
   static getAll = async (parkId: string) => {
-    const query = `filter[park_id]=${parkId}&page[size]=200`;
-    let entities: SiteTypePayload[]= await makeGet(`/api/v1/site_types?${query}`);
-    return entities;
+    const params = {
+      filter: { parkId },
+      page: { size: 200 },
+    }
+    const result = await client.getAll(params);
+    return result.entities
   }
+  
 }
