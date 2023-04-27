@@ -1,15 +1,18 @@
+import { JsonApiClient } from 'services/client/JsonApiClient';
 import { TaxTablePayload } from 'services/payloads/TaxTablePayload';
-import { makeGet } from 'services/util';
+import { ax } from 'services/util';
 
+const client = new JsonApiClient(TaxTablePayload, ax, 'tax_tables');
 export class TaxTableService {
+
   static getById = async (id: string) => {
-    let entities: TaxTablePayload = await makeGet(`/api/v1/tax_tables/${id}`);
-    return entities;
+    const result = await client.getById(id);
+    return result
   }
 
   static getAll = async (parkId: string) => {
-    const query = `filter[park_id]=${parkId}`;
-    let entities: TaxTablePayload[] = await makeGet(`/api/v1/tax_tables?${query}`);
-    return entities;
+    const params = { filter: { parkId } };
+    const result = await client.getAll(params);
+    return result.entities;
   }
 }

@@ -1,32 +1,24 @@
-// import { TableInstance } from 'components/tables/ControlledTable';
-// import { Serializer } from 'jsonapi-serializer';
+import { JsonApiClient } from 'services/client/JsonApiClient';
 import { MessagePayload } from 'services/payloads/MessagePayload';
-import { makeGet } from 'services/util';
-// import { makeDelete, makeGet, makeGetForTable, makePatch, makePost } from '../util';
+import { ax } from 'services/util';
 
-// const serializer = new Serializer('messages', {
-//   attributes: MessagePayloadAttributes,
-//   keyForAttribute: 'snake_case',
-// });
-
+const client = new JsonApiClient(MessagePayload, ax, 'messages');
 export class MessageService {
+
   static getById = async (id: string) => {
     return this.getByReservationId(id);
   };
-
-  static applyAction = async (id: string, action: string) => {
-    // const payload = serializer.serialize({ id, action });
-    // let response: MessagePayload = await makePatch(`/api/v1/messages/${id}`, payload);
-    // return response;
+  
+  static getByReservationId = async (reservationId: string) => {
+    const params = { filter: { reservationId, resourceType: 'Guest' }};
+    const result = await client.find(params);
+    return result
   };
 
   static getByGuestId = async (guestId: string) => {
-    let data: MessagePayload[] = await makeGet(`/api/v1/messages?filter[resource_id]=${guestId}&filter[resource_type]=Guest`);
-    return data;
+    const params = { filter: { resourceId: guestId, resourceType: 'Guest' }};
+    const result = await client.find(params);
+    return result;
   };
 
-  static getByReservationId = async (reservationId: string) => {
-    let data: MessagePayload[] = await makeGet(`/api/v1/messages?filter[resource_id]=${reservationId}&filter[resource_type]=Reservation`);
-    return data;
-  };
 }

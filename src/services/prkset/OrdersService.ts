@@ -1,36 +1,31 @@
 import { TableInstance } from 'components/tables/ControlledTable';
-import { Serializer } from 'jsonapi-serializer';
-import { OrderPayloadAttributes, OrderPayload } from 'services/payloads/OrderPayload';
-import { makeGetForTable, makeGet, makePatch, makePost, makePut } from '../util';
+import { OrderPayload } from 'services/payloads/OrderPayload';
+import { makePatch, ax } from '../util';
+import { JsonApiClient } from 'services/client/JsonApiClient';
 
-const serializer = new Serializer('orders', {
-  attributes: OrderPayloadAttributes,
-  keyForAttribute: 'snake_case',
-});
-
+const client = new JsonApiClient(OrderPayload, ax, 'orders');
 export class OrdersService {
+
   static getById = async (id: string) => {
-    let entity = await makeGet<OrderPayload>(`/api/v1/orders/${id}`);
-    return entity;
-  };
+    const result = await client.getById(id);
+    return result
+  }
 
   static getByIds = async (ids: string[]) => {
-    const query = `filter[id]=${ids.join(',')}`;
-    let entities = await makeGet<OrderPayload[]>(`/api/v1/orders?${query}`);
-    return entities;
-  };
+    const params = { filter: { id: ids.join(',') }};
+    const result = await client.find(params);
+    return result
+  }
 
   static find = async (table: TableInstance, parkId: string) => {
-    const query = `filter[park_id]=${parkId}&sort=-number`;
-    let entities = await makeGetForTable<OrderPayload[]>('/api/v1/orders', query, table);
-    return entities;
+    const params = { filter: { parkId, sort: '-number'} };
+    const result = await client.findForTable(table, params);
+    return result
   };
 
   static checkBalance = async (id: string, action: string) => {
-    const payload = serializer.serialize({ id, action });
-    console.log('payload', payload);
-    let response: OrderPayload = await makePatch(`/api/v1/orders/${id}`, payload);
-    return response;
+    const result = await client.patch(id, { id, action });
+    return result
   };
 
   static updatePartial = async (id: string, entity: Partial<OrderPayload>) => {
@@ -38,14 +33,8 @@ export class OrdersService {
     await makePatch(`/api/v1/guests/${id}`, payload);
   }
 
-  static createOrUpdate = async (entity: Partial<OrderPayload>) => {
-    const payload = serializer.serialize(entity);
-    let response: OrderPayload;
-    if (entity.id) {
-      response = await makePut(`/api/v1/orders/${entity.id}`, payload);
-    } else {
-      response = await makePost('/api/v1/orders', payload);
-    }
-    return response;
-  };
+  static createOrUpdate = async (entity: OrderPayload) => {
+    const result = await client.createOrUpdate(entity);
+    return result
+  }
 }

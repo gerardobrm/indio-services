@@ -1,4 +1,4 @@
-export interface UniversalSiteTypesPayload {
+export class UniversalSiteTypesPayload {
   id: string;
   name: string;
   typeName: string;
