@@ -6,7 +6,7 @@ const client = new JsonApiClient(MessagePayload, ax, 'messages');
 export class MessageService {
 
   static getById = async (id: string) => {
-    return this.getByReservationId(id);
+    return MessageService.getByReservationId(id);
   };
   
   static getByReservationId = async (reservationId: string) => {

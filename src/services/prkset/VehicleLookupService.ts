@@ -5,8 +5,8 @@ export class VehicleLookupService {
   static cached: VehicleParts<VehicleLookupPayload[]>;
 
   static getLookups = async () => {
-    if (this.cached) {
-      return this.cached;
+    if (VehicleLookupService.cached) {
+      return VehicleLookupService.cached;
     }
 
     const requests = {
@@ -21,13 +21,13 @@ export class VehicleLookupService {
     const results = Object.fromEntries(Object.keys(requests).map((key, idx) => [key, resultsArr[idx]]));
     const { types, lengthRanges, slides, towings, electricals } = results;
     const lookups = { types, lengthRanges, slides, towings, electricals };
-    this.cached = lookups;
+    VehicleLookupService.cached = lookups;
 
     return lookups;
   }
 
   static getMaps = async () => {
-    const results = await this.getLookups();
+    const results = await VehicleLookupService.getLookups();
     const maps = convertAllToMap(results);
     return maps;
   }
