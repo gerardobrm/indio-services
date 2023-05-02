@@ -22,6 +22,17 @@ export class ChargeService {
     return result
   };
 
+  static create = async (entity: Partial<ChargePayload>, parkId: string) => {
+    entity = { ...entity, parkId };
+    const result = await client.createOrUpdate(entity as ChargePayload);
+    return result
+  };
+
+  static update = async (id: string, entity: ChargePayload) => {
+    const result = await client.createOrUpdate(entity);
+    return result
+  };
+
   static createOrUpdate = async (entity: ChargePayload) => {
     const result = await client.createOrUpdate(entity);
     return result

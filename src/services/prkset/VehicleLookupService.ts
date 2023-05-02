@@ -4,49 +4,19 @@ import { ax } from '../util';
 export class VehicleLookupService {
   static cached: VehicleParts<VehicleLookupPayload[]>;
 
-  static getElectricals = async () => {
-    const client = clientGenerator(VehiclePath.Electricals);
-    const result = await client.find();
-    return result;
-  }
-
-  static getTypes = async () => {
-    const client = clientGenerator(VehiclePath.Types);
-    const result = await client.find();
-    return result;
-  }
-
-  static getLengthRanges = async () => {
-    const client = clientGenerator(VehiclePath.LengthRanges);
-    const result = await client.find();
-    return result;
-  }
-
-  static getSlides = async () => {
-    const client = clientGenerator(VehiclePath.Slides);
-    const result = await client.find();
-    return result;
-  }
-
-  static getTowings = async () => {
-    const client = clientGenerator(VehiclePath.Towings);
-    const result = await client.find();
-    return result;
-  }
-
-
   static getLookups = async () => {
     if (this.cached) {
       return this.cached;
     }
 
     const requests = {
-      types: this.getTypes(),
-      lengthRanges: this.getLengthRanges(),
-      slides: this.getSlides(),
-      towings: this.getTowings(),
-      electricals: this.getElectricals(),
+      types: await clientGenerator(VehiclePath.Types).find(),
+      lengthRanges: await clientGenerator(VehiclePath.LengthRanges).find(),
+      slides: await clientGenerator(VehiclePath.Slides).find(),
+      towings: await clientGenerator(VehiclePath.Towings).find(),
+      electricals: await clientGenerator(VehiclePath.Electricals).find(),
     };  
+    
     const resultsArr = await Promise.all(Object.values(requests));
     const results = Object.fromEntries(Object.keys(requests).map((key, idx) => [key, resultsArr[idx]]));
     const { types, lengthRanges, slides, towings, electricals } = results;
