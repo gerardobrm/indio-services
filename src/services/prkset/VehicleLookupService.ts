@@ -1,32 +1,8 @@
-import { makeGet } from '../util';
+import { JsonApiClient } from 'services/client/JsonApiClient';
+import { ax } from '../util';
 
 export class VehicleLookupService {
   static cached: VehicleParts<VehicleLookupPayload[]>;
-
-  static getElectricals = async () => {
-    let entities: VehicleLookupPayload[] = await makeGet('/api/v1/vehicle_electricals');
-    return entities;
-  }
-
-  static getTypes = async () => {
-    let entities: VehicleLookupPayload[] = await makeGet('/api/v1/vehicle_types');
-    return entities;
-  }
-
-  static getLengthRanges = async () => {
-    let entities: VehicleLookupPayload[] = await makeGet('/api/v1/vehicle_length_ranges');
-    return entities;
-  }
-
-  static getSlides = async () => {
-    let entities: VehicleLookupPayload[] = await makeGet('/api/v1/vehicle_slides');
-    return entities;
-  }
-
-  static getTowings = async () => {
-    let entities: VehicleLookupPayload[] = await makeGet('/api/v1/vehicle_towings');
-    return entities;
-  }
 
   static getLookups = async () => {
     if (VehicleLookupService.cached) {
@@ -34,12 +10,13 @@ export class VehicleLookupService {
     }
 
     const requests = {
-      types: VehicleLookupService.getTypes(),
-      lengthRanges: VehicleLookupService.getLengthRanges(),
-      slides: VehicleLookupService.getSlides(),
-      towings: VehicleLookupService.getTowings(),
-      electricals: VehicleLookupService.getElectricals(),
+      types: await clientGenerator(VehiclePath.Types).find(),
+      lengthRanges: await clientGenerator(VehiclePath.LengthRanges).find(),
+      slides: await clientGenerator(VehiclePath.Slides).find(),
+      towings: await clientGenerator(VehiclePath.Towings).find(),
+      electricals: await clientGenerator(VehiclePath.Electricals).find(),
     };  
+    
     const resultsArr = await Promise.all(Object.values(requests));
     const results = Object.fromEntries(Object.keys(requests).map((key, idx) => [key, resultsArr[idx]]));
     const { types, lengthRanges, slides, towings, electricals } = results;
@@ -64,7 +41,24 @@ type VehicleParts<T> = {
   electricals: T;
 }
 
+
+enum VehiclePath {
+  Electricals = 'vehicle_electricals',
+  Types = 'vehicle_types',
+  LengthRanges = 'vehicle_length_ranges',
+  Slides = 'vehicle_slides',
+  Towings = 'vehicle_towings',
+}
+
 export type VehicleMaps = VehicleParts<Map<string, string>>;
+export class VehicleLookupPayload {
+  id: string;
+  abbr: string;
+  label: string;
+  description: string;
+}
+
+const clientGenerator = (path: VehiclePath) => new JsonApiClient(VehicleLookupPayload, ax, path);
 
 const convertAllToMap = async (values: VehicleParts<VehicleLookupPayload[]>) => {
   const keys = Object.keys(values);
@@ -80,9 +74,4 @@ const convertAllToMap = async (values: VehicleParts<VehicleLookupPayload[]>) => 
   return result;
 };
 
-export interface VehicleLookupPayload {
-  id: string;
-  abbr: string;
-  label: string;
-  description: string;
-}
+

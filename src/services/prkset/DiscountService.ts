@@ -7,20 +7,18 @@ const client = new JsonApiClient(DiscountPayload, ax, 'discounts');
 export class DiscountService {
 
   static getById = async (id: string) => {
-    const result = client.getById(id);
+    const result = await client.getById(id);
     return result
   }
 
   static getByIds = async (ids: string[]) => {
-    const params = {
-      filter: { id: ids.join(',') },
-    };
+    const params = { filter: { id: ids.join(',') }};
     const result = await client.find(params);
     return result
   }
 
   static createOrUpdate = async (entity: DiscountPayload) => {
-    const result = client.createOrUpdate(entity);
+    const result = await client.createOrUpdate(entity);
     return result
   }
 

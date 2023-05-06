@@ -1,52 +1,39 @@
 import { TableInstance } from 'services/interfaces/TableInstance';
-import { makeGet, makeGetForTable, makePost, makePut } from '../util';
-import { TaxRatePayload, TaxRatePayloadAttributes, TaxTablePayload, TaxTablePayloadAttributes } from 'services/payloads';
-import { Serializer } from 'jsonapi-serializer';
+import { TaxRatePayload, TaxTablePayload } from 'services/payloads';
+import { JsonApiClient } from 'services/client/JsonApiClient';
+import { ax } from '../util';
 
-const taxTableSerializer = new Serializer('tax_tables', {
-  attributes: TaxTablePayloadAttributes, keyForAttribute: 'snake_case'
-});
-
-const taxRateSerializer = new Serializer('tax_rates', {
-  attributes: TaxRatePayloadAttributes, keyForAttribute: 'snake_case'
-});
-
+const taxTableclient = new JsonApiClient(TaxTablePayload, ax, 'tax_tables');
+const taxRateclient = new JsonApiClient(TaxRatePayload, ax, 'tax_rates');
 export class TaxService {
+
   static getAllTaxRates = async () => {
-    const data: TaxRatePayload[] = await makeGet('/api/v1/tax_rates');
-    return data;
+    const result = await taxRateclient.getAll();
+    return result.entities;
   }
 
   static findTaxRates = async (table: TableInstance) => {
-    const data = await makeGetForTable<TaxRatePayload[]>('/api/v1/tax_rates', '', table);
-    return data;
+    const result = await taxRateclient.findForTable(table, {});
+    return result;
   }
 
-  static createOrUpdateTaxRate = async (entity: TaxRatePayload) => {
-    const payload = taxRateSerializer.serialize(entity);
-    if (entity.id) {
-      await makePut(`/api/v1/tax_rates/${entity.id}`, payload);
-    } else {
-      await makePost('/api/v1/tax_rates', payload);
-    }
+  static createOrUpdate = async (entity: TaxRatePayload) => {
+    const result = await taxRateclient.createOrUpdate(entity);
+    return result;
   }
 
   static getAllTaxTables = async (parkId: string) => {
-    const data: TaxTablePayload[] = await makeGet(`/api/v1/tax_tables?filter[park_id]=${parkId}`);
-    return data;
+    const result = await taxTableclient.find({ parkId });
+    return result;
   }
 
   static findTaxTables = async (table: TableInstance) => {
-    const data = await makeGetForTable<TaxTablePayload[]>('/api/v1/tax_tables', '', table);
-    return data;
+    const result = await taxTableclient.findForTable(table, {});
+    return result;
   }
 
   static createOrUpdateTaxTable = async (entity: TaxTablePayload) => {
-    const payload = taxTableSerializer.serialize(entity);
-    if (entity.id) {
-      await makePut(`/api/v1/tax_tables/${entity.id}`, payload);
-    } else {
-      await makePost('/api/v1/tax_tables', payload);
-    }
+    const result = await taxTableclient.createOrUpdate(entity);
+    return result;
   }
 }

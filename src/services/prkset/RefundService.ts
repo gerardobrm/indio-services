@@ -1,17 +1,14 @@
-import { Serializer } from 'jsonapi-serializer';
-import { RefundAttributes, RefundPayload } from 'services/payloads/RefundPayload';
-import { makePost } from '../util';
+import { RefundPayload } from 'services/payloads/RefundPayload';
+import { ax } from '../util';
+import { JsonApiClient } from 'services/client/JsonApiClient';
 
-const serializer = new Serializer('refunds', {
-  attributes: RefundAttributes, keyForAttribute: 'snake_case'
-});
+const client = new JsonApiClient(RefundPayload, ax, 'refunds')
 
 export class RefundService {
-  static getById = async (id: string) => {
+
+  static create = async (entity: RefundPayload) => {
+    const result = await client.createOrUpdate(entity);
+    return result
   }
 
-  static create = async (entity: Partial<RefundPayload>) => {
-    const payload = serializer.serialize(entity);
-    await makePost('/api/v1/refunds', payload);
-  }
 }

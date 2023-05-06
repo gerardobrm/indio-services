@@ -1,52 +1,45 @@
 import { TableInstance } from 'components/tables/ControlledTable';
-import { Serializer } from 'jsonapi-serializer';
-import { SundriesAttributes, SundriesPayload } from 'services/payloads/SundriesPayload';
-import { makeGet, makeGetForTable, makePost, makePut } from '../util';
+import { SundriesPayload } from 'services/payloads/SundriesPayload';
+import { JsonApiClient } from 'services/client/JsonApiClient';
+import { ax } from '../util';
 
-const serializer = new Serializer('sundries', {
-  attributes:  SundriesAttributes, keyForAttribute: 'snake_case'
-});
-
+const client = new JsonApiClient(SundriesPayload, ax, 'sundries');
 export class SundriesService {
+
   static getById = async (id: string) => {
-    let entities: SundriesPayload[] = await makeGet(`/api/v1/sundries?${id}`);
-    return entities;
+    const result = await client.find({ id });
+    return result;
   }
 
   static find = async (table: TableInstance, parkId: string) => {
-    const query = `filter[park_id]=${parkId}`;
-    let entities = await makeGetForTable<SundriesPayload[]>('/api/v1/sundries', query, table);
-    return entities;
+    const result = await client.findForTable(table, { parkId });
+    return result
   }
 
   static findPos = async (table: TableInstance, parkId: string) => {
-    const query = `filter[pos]=true&filter[park_id]=${parkId}`;
-    let entities = await makeGetForTable<SundriesPayload[]>('/api/v1/sundries', query, table);
-    return entities;
+    const params = { filter: { pos: true, parkId } };
+    const result = await client.findForTable(table, params);
+    return result;
   }
 
   static getPosSundries = async (parkId: string, search: string) => {
-    let query = `filter[pos]=true&filter[park_id]=${parkId}&page[size]=10`;
-    if (search) {
-      query += `&filter[q][contains]=${search}`;
-    }
-    let entities: SundriesPayload[] = await makeGet(`/api/v1/sundries?${query}`);
-    return entities;
+    const params = { 
+      filter: { pos: true, parkId }, 
+      page: { size: 10 } 
+    };
+    if (search) params.filter['q'] = { contains: search };
+    const result = await client.find(params);
+    return result;
   }
 
-  static createOrUpdate = async (entity: Partial<SundriesPayload>) => {
-    const payload = serializer.serialize(entity);
-    if (entity.id) {
-      await makePut(`/api/v1/sundries/${entity.id}`, payload);
-    } else {
-      await makePost('/api/v1/sundries', payload);
-    }
+  static createOrUpdate = async (entity: SundriesPayload) => {
+    const result = await client.createOrUpdate(entity);
+    return result;
   }
 
   static getAll = async (parkId: string) => {
-    const query = `filter[park_id]=${parkId}`;
-
-    let entities: SundriesPayload[] = await makeGet(`/api/v1/sundries?${query}`);
-    return entities;
+    const params = { filter: { parkId } };
+    const result = await client.getAll(params);
+    return result.entities
   }
 }

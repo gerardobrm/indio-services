@@ -1,32 +1,19 @@
-import { Serializer } from 'jsonapi-serializer';
-import { ChargeAttributes, ChargePayload } from 'services/payloads/ChargePayload';
-import { makeGet, makePost, makePut } from '../util';
+import { ChargePayload } from 'services/payloads/ChargePayload';
+import { JsonApiClient } from 'services/client/JsonApiClient';
+import { ax } from '../util';
 
-const serializer = new Serializer('credits', {
-  attributes:  ChargeAttributes, keyForAttribute: 'snake_case'
-});
-
+const client = new JsonApiClient(ChargePayload, ax, 'credits');
 export class CreditService {
-  static getById = async (id: string) => {
-  }
 
   static getByIds = async (ids: string[]) => {
-    const query = `filter[id]=${ids.join(',')}`;
-    let entities = await makeGet<ChargePayload[]>(`/api/v1/credits?${query}`);
-    return entities;
+    const params = { filter: { id: ids.join(',') } };
+    const result = await client.find(params);
+    return result;
   }
 
-  static create = async (entity: any) => {
+  static createOrUpdate = async (entity: ChargePayload) => {
+    const result = await client.createOrUpdate(entity);
+    return result;
   }
-  static update = async (id: number, entity: any) => {
-  }
-
-  static createOrUpdate = async (entity: Partial<ChargePayload>) => {
-    const payload = serializer.serialize(entity);
-    if (entity.id) {
-      await makePut(`/api/v1/credits/${entity.id}`, payload);
-    } else {
-      await makePost('/api/v1/credits', payload);
-    }
-  }
+  
 }

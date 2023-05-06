@@ -1,15 +1,20 @@
+import { JsonApiClient } from 'services/client/JsonApiClient';
 import { GLAccountPayload } from 'services/payloads/GLAccountPayload';
-import { makeGet } from 'services/util';
+import { ax } from 'services/util';
+
+const client = new JsonApiClient(GLAccountPayload, ax, 'gl_accounts');
 
 export class GlAccountService {
+
   static getById = async (id: string) => {
-    let entities: GLAccountPayload = await makeGet(`/api/v1/gl_accounts/${id}`);
-    return entities;
+    const result = await client.getById(id);
+    return result
   }
 
   static getAll = async (parkId: string) => {
-    const query = `filter[park_id]=${parkId}`;
-    let entities: GLAccountPayload[] = await makeGet(`/api/v1/gl_accounts?${query}`);
-    return entities;
+    const params = { filter: { parkId } };
+    const result = await client.getAll(params);
+    return result.entities;
   }
+  
 }

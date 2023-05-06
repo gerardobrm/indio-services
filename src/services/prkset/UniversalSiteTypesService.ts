@@ -1,9 +1,13 @@
+import { JsonApiClient } from 'services/client/JsonApiClient';
 import { UniversalSiteTypesPayload } from 'services/payloads/UniversalSiteTypesPayload';
-import { makeGet } from 'services/util';
+import { ax } from 'services/util';
+
+const client = new JsonApiClient(UniversalSiteTypesPayload, ax, 'universal_site_types');
 
 export class UniversalTypesService {
+
   static getAll = async () => {
-    let entities: UniversalSiteTypesPayload[] = await makeGet('/api/v1/universal_site_types');
-    return entities;
+    const result = await client.getAll();
+    return result.entities
   }
 }

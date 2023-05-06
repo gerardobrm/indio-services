@@ -1,76 +1,49 @@
-import { Serializer } from 'jsonapi-serializer';
-import { ChargeAttributes, ChargePayload, ChargeRequest } from 'services/payloads/ChargePayload';
-import { makeGet, makePut, makePost, makeDelete, makePatch } from '../util';
+import { ChargePayload } from 'services/payloads/ChargePayload';
+import { JsonApiClient } from 'services/client/JsonApiClient';
+import { ax } from '../util';
 
-const serializer = new Serializer('charges', {
-  attributes: ChargeAttributes,
-  keyForAttribute: 'snake_case',
-});
-
+const client = new JsonApiClient(ChargePayload, ax, 'charges')
 export class ChargeService {
+
   static getById = async (id: string) => {
-    let entities: ChargePayload = await makeGet<ChargePayload>(`/api/v1/charges/${id}`);
-    return entities;
-  };
+    const result = await client.getById(id);
+    return result;
+  }
 
   static getByIds = async (ids: string[]) => {
-    const query = `filter[id]=${ids.join(',')}`;
-    let entities: ChargePayload[] = await makeGet<ChargePayload[]>(`/api/v1/charges?${query}`);
-    return entities;
-  };
+    const params = { filter: { id: ids.join(',') } };
+    const result = await client.find(params);
+    return result;
+  }
 
-  static getByOrderId = async (id: string) => {
-    let entities = await makeGet<ChargePayload[]>(`/api/v1/charges?filter[order_id]=${id}&filter[sub_type]=Sundry`);
-    return entities;
+  static getByOrderId = async (orderId: string) => {
+    const params = { filter: { orderId, subType: 'Sundry' } };
+    const result = await client.find(params);
+    return result
   };
 
   static create = async (entity: Partial<ChargePayload>, parkId: string) => {
-    entity = {
-      ...entity,
-      parkId,
-    };
-
-    const payload = serializer.serialize(entity);
-    let newEntity = await makePost<ChargePayload>('/api/v1/charges', payload);
-    return newEntity;
+    entity = { ...entity, parkId };
+    const result = await client.createOrUpdate(entity as ChargePayload);
+    return result
   };
 
   static update = async (id: string, entity: ChargePayload) => {
-    const payload = serializer.serialize(entity);
-    await makePut(`/api/v1/charges/${id}`, payload);
+    const result = await client.createOrUpdate(entity);
+    return result
   };
+
+  static createOrUpdate = async (entity: ChargePayload) => {
+    const result = await client.createOrUpdate(entity);
+    return result
+  }
 
   static updatePartial = async (id: string, entity: Partial<ChargePayload>) => {
-    const payload = serializer.serialize(entity);
-    await makePatch(`/api/v1/charges/${id}`, payload);
-  };
-
-  static createOrUpdate = async (entity: ChargeRequest) => {
-    const payload = serializer.serialize(entity);
-
-    if (entity.id) {
-      return await makePut<ChargePayload>(`/api/v1/charges/${entity.id}`, payload);
-    } else {
-      return await makePost<ChargePayload>('/api/v1/charges', payload);
-    }
-  };
-
-  static createOrUpdateCart = async (entity: Partial<ChargePayload>, parkId: string) => {
-    entity = {
-      ...entity,
-      parkId,
-    };
-
-    const payload = serializer.serialize(entity);
-    console.log(`update carte ${payload}`);
-    // if (entity.id) {
-    //   await makePut(`/api/v1/charges/${entity.id}`, payload);
-    // } else {
-    //   await makePost('/api/v1/charges', payload);
-    // }
-  };
+    const result = await client.updatePartial(id, entity);
+    return result;
+  }
 
   static delete = async (id: string) => {
-    await makeDelete(`/api/v1/charges/${id}`);
+    await client.delete(id)
   };
 }
