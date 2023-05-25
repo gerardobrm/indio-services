@@ -1,27 +1,33 @@
 import { TableInstance } from './interfaces/TableInstance';
-import { SitePayload, SitePayloadAttributes } from './payloads/SitePayload';
-import { Serializer } from 'jsonapi-serializer';
-import { makeGetForTable, makePut } from './util';
+import { SitePayload } from './payloads/SitePayload';
+import { ax } from './util';
+import { JsonApiClient } from './client/JsonApiClient';
 
-const serializer = new Serializer('sites', {
-  attributes: SitePayloadAttributes, keyForAttribute: 'snake_case'
-});
-
+const client = new JsonApiClient(SitePayload, ax, 'sites');
 export class MaintenanceService {
-  static update = async (entity: Partial<SitePayload>) => {
-    const payload = serializer.serialize(entity);
-    await makePut(`/api/v1/sites/${entity.id}`, payload);
+  static getById = async (id: string) => {
+    const result = await client.getById(id);
+    return result;
+  }
+
+  static createOrUpdate = async (entity: SitePayload) => {
+    const result = await client.createOrUpdate(entity);
+    return result;
   }
 
   static find = async (table: TableInstance, parkId: string) => {
-    const query = `filter[park_id]=${parkId}&sort=-task_list,updated_at`;
-    let entities: SitePayload[] = await makeGetForTable('/api/v1/sites', query, table);
-    return entities;
+    const params = {
+      filter: { parkId, sort: '-task_list,updated_at' }
+    }
+    const result = await client.findForTable(table, params);
+    return result;
   }
 
   static getTasks = async (table: TableInstance, parkId: string) => {
-    const query = `filter[park_id]=${parkId}&filter[has_tasks]=true`;
-    let entities: SitePayload[] = await makeGetForTable('/api/v1/sites', query, table);
-    return entities;
+    const params = {
+      filter: { parkId, hasTasks: true }
+    }
+    const result = await client.findForTable(table, params);
+    return result;
   }
 }

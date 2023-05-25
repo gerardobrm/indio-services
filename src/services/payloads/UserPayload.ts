@@ -1,4 +1,4 @@
-export type UserPayload = {
+export class UserPayload {
   id: string;
   email: string;
   firstName: string;
@@ -11,13 +11,13 @@ export type UserPayload = {
 }
 
 type UserRolePayload = {
-  id: string
-  clientName: string
-  roleName: string
-  userName: string
+  id: string;
+  clientName: string;
+  roleName: string;
+  userName: string;
 }
 
 type Keys = keyof UserPayload;
 export const UserPayloadAttributes: Keys[] = [
-  'id','email', 'firstName', 'middleName', 'lastName'
+  'id', 'email', 'firstName', 'middleName', 'lastName'
 ];

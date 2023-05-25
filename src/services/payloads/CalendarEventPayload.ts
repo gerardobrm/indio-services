@@ -1,4 +1,4 @@
-export interface CalendarEventPayload {
+export class CalendarEventPayload {
   id: string;
   siteTypeId: string;
   siteId: string;

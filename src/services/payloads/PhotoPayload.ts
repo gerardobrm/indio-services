@@ -1,21 +1,21 @@
-export type PhotoPayload = {
-  id: string
-  parkId: string
-  fileUrl: string
-  fileDataUri: string
-  name: string
-  description: string
-  originalFilename: string
+export class PhotoPayload {
+  id: string;
+  parkId: string;
+  fileUrl: string;
+  fileDataUri: string;
+  name: string;
+  description: string;
+  originalFilename: string;
   fileMetadata: {
-    filename: string,
-    size: number,
-    mime_type: string,
-    width: string,
-    height: string,
-  },
-  tagNames: string[]
-  createdAt: string
-  updatedAt: string
+    filename: string;
+    size: number;
+    mime_type: string;
+    width: string;
+    height: string;
+  };
+  tagNames: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 type Keys = keyof PhotoPayload;
