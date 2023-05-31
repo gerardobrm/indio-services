@@ -1,27 +1,24 @@
-import { JsonApiClient } from './client/JsonApiClient';
 import { TableInstance } from './interfaces/TableInstance';
-import { Serializer } from 'jsonapi-serializer';
-import { ReservationPayload, CreateReservationPayload, CreateReservationPayloadAttributes, CreateReservationResponse } from './payloads/ReservationPayload';
+import { ReservationPayload, CreateReservationPayload } from './payloads/ReservationPayload';
 import { QuotePayload, QuoteResponse } from './payloads/QuotePayload';
 import { CalendarEventPayload } from './payloads/CalendarEventPayload';
 import { TransactionPayload } from './payloads/TransactionsPayload';
 import { SiteHoldPayload } from './payloads/SiteHoldPayload';
-import { ax, makeGet, makeGetForTable, makeHackyPost, makePatch, makePut } from './util';
-// import { Filters } from 'view-components/dropdowns/models/Filters';
+import { ax, makeGet, makeHackyPost } from './util';
+
 type Filters = any;
 import dayjs from 'dayjs';
+import { JsonApiClient } from './client/JsonApiClient';
 
-const client = new JsonApiClient(ReservationPayload, ax, 'reservation_summaries');
+const reservationSummariesClient = new JsonApiClient(ReservationPayload, ax, 'reservation_summaries');
+const reservationClient = new JsonApiClient(ReservationPayload, ax, 'reservations');
 const quoteClient = new JsonApiClient(QuotePayload, ax, 'quotes');
 const transactionClient = new JsonApiClient(TransactionPayload, ax, 'transactions');
-
-const serializer = new Serializer('reservation', {
-  attributes: CreateReservationPayloadAttributes, keyForAttribute: 'snake_case'
-});
+const calendarEventClient = new JsonApiClient(CalendarEventPayload, ax, 'calendar_events');
 
 export class ReservationService {
   static getById = async (id: string) => {
-    const result = await client.getById(id);
+    const result = await reservationSummariesClient.getById(id);
     return result;
   }
 
@@ -36,7 +33,7 @@ export class ReservationService {
       page: { number: pageNumber, size: pageSize },
       sort: '-arrival_date',
     }
-    const result = await client.find(params);
+    const result = await reservationSummariesClient.find(params);
     return result;
   }
 
@@ -49,7 +46,7 @@ export class ReservationService {
 
   static createOrUpdate = async (entity: CreateReservationPayload) => {
     const payload = ReservationPayload.new(entity);
-    let response = await client.createOrUpdate(payload);
+    let response = await reservationSummariesClient.createOrUpdate(payload);
     if (response?.id) {
       // TODO: Hack due API bug
       response = await ReservationService.getById(response.id);
@@ -58,23 +55,17 @@ export class ReservationService {
   }
 
   static updatePartial = async (id: string, entity: Partial<ReservationPayload>) => {
-    const payload = serializer.serialize(entity);
-    console.log('service', payload);
-    try {
-      let response: ReservationPayload = await makePut(`/api/v1/reservations/${id}`, payload);
-      // TODO: Hack due API bug
-      const summaryKeys = ['guestSummary', 'vehicleSummary', 'siteSummary', 'rateSummary', 'discountSummary', 'transactionSummaries', 'paymentSummaries'];
-      summaryKeys.forEach(key => {
-        response[key] = response[key] || {};
-      });
-
-      return response;
-    } catch {};
+    const result = await reservationClient.patch(id, entity);
+    const summaryKeys = ['guestSummary', 'vehicleSummary', 'siteSummary', 'rateSummary', 'discountSummary', 'transactionSummaries', 'paymentSummaries'];
+    summaryKeys.forEach(key => {
+      result[key] = result[key] || {};
+    });
+    return result;
   }
 
   static applyAction = async (id: string, action: string) => {
     const payload = { id, action };
-    const result = await client.updatePartial(id, payload);
+    const result = await reservationSummariesClient.updatePartial(id, payload);
     return result;
   }
 
@@ -82,87 +73,84 @@ export class ReservationService {
     await makeHackyPost(`/api/v1/reservations/${id}/send_confirmation_email`);
   }
 
-  static buildQuery = (parkId: string, startDate: string, todayStatus?: string, 
-    type?: string[], status?: string[], siteTypeIds?: string[], siteStatus?: string[]
+  static buildQuery = (
+    parkId: string,
+    startDate: string,
+    todayStatus?: string,
+    type?: string[],
+    status?: string[],
+    siteTypeIds?: string[],
+    siteStatus?: string[]
   ) => {
-    const values = [];
-    const today = dayjs().format('YYYY/MM/DD');
+    const params: any = {};
 
     if (parkId) {
-      values.push(`filter[park_id]=${parkId}`);
+      params.filter = { ...params.filter, parkId };
     }
     if (startDate) {
-      values.push(`filter[arrival_date][gt]=${startDate}`);
+      params.filter = { ...params.filter, arrivalDate: { gt: startDate } };
     }
     if (todayStatus) {
-      values.push(`filter[${todayStatus}]=${today}`);
+      params.filter = { ...params.filter, [todayStatus]: dayjs().format('YYYY/MM/DD') };
     }
-
     if (type?.length > 0) {
-      values.push(`filter[type]=${type.join(',')}`);
+      params.filter = { ...params.filter, type };
     }
     if (status?.length > 0) {
-      values.push(`filter[status]=${status.join(',')}`);
+      params.filter = { ...params.filter, status };
     }
-
     if (siteTypeIds?.length > 0) {
-      values.push(`filter[site_type_id]=${siteTypeIds.join(',')}`);
+      params.filter = { ...params.filter, siteTypeId: siteTypeIds };
     }
     if (siteStatus?.length > 0) {
-      values.push(`filter[site_type_status]=${siteStatus.join(',')}`);
+      params.filter = { ...params.filter, siteTypeStatus: siteStatus };
     }
+    return params;
+  };
 
-    const query = values.join('&');
-    return query;
-  }
 
   static getCalendarEvents = async (parkId: string, dateRange: string, search: string) => {
-    let query = ReservationService.buildQuery(parkId, null, null, null, null, [], []);
-    query += '&page[size]=1000&filter[status][not_eq]=cancelled,no_show';
+    const params = ReservationService.buildQuery(parkId, null, null, null, null, [], []);
+    params.page = { size: 1000 };
+    params.filter = { ...params.filter, status: { not_eq: 'cancelled,no_show' } };
+
     if (dateRange) {
-      query += `&filter[in_daterange][eq]=${dateRange}`;
+      params.filter = { ...params.filter, in_daterange: { eq: dateRange } };
     }
     if (search) {
-      query += `&filter[q][contains]=${search}`;
+      params.filter = { ...params.filter, q: { contains: search } };
     }
-
-    let entities: CalendarEventPayload[] = await makeGet(`/api/v1/calendar_events?${query}`);
-    return entities;
+    const result = await calendarEventClient.find(params);
+    return result;
   }
 
   static find = async (parkId: string, table: TableInstance, dateRange: string[], filterName: string, filters: Filters) => {
     const { reservationType: type, statusType: status } = filters;
     const { siteType, rateType } = filters;
+    const params = { filter: { parkId } };
 
-    const values = [];
-    values.push(`filter[park_id]=${parkId}`);
     if (dateRange && filterName) {
-      const dates = { 
-        start_date: dateRange[0],
-        end_date: dateRange[1],
-      }
-      const jsonDates = JSON.stringify(dates);
-      values.push(`filter[${filterName}]=${jsonDates}`);
+      const dates = { start_date: dateRange[0], end_date: dateRange[1] };
+      params.filter[filterName] = JSON.stringify(dates);
     }
     if (type?.length > 0) {
-      values.push(`filter[type]=${type.join(',')}`);
+      params.filter['type'] = type.join(',');
     }
     if (status?.length > 0) {
-      values.push(`filter[status]=${status.join(',')}`);
+      params.filter['status'] = status.join(',');
     }
     if (siteType?.length > 0) {
-      values.push(`filter[site_type_id]=${siteType.join(',')}`);
+      params.filter['siteTypeId'] = siteType.join(',');
     }
     if (rateType?.length > 0) {
-      values.push(`filter[rate_type]=${siteType.join(',')}`);
+      params.filter['rateType'] = rateType.join(',');
     }
-    const query = values.join('&');
 
     if (!table.sorting) {
-      table.setters.setSorting({field: 'created_at', order: 'descend'});
+      table.setters.setSorting({ field: 'created_at', order: 'descend' });
     }
-    let entities: ReservationPayload[] = await makeGetForTable('/api/v1/reservation_summaries', query, table);
-    return entities;
+    const result = await reservationSummariesClient.findForTable(table, params);
+    return result;
   }
 
   static getAll = async (parkId: string, search: string) => {
@@ -170,7 +158,7 @@ export class ReservationService {
       filter: { parkId, q: { contains: search } },
       page: { number: 1, size: 10 },
     }
-    const result = await client.getAll(params);
+    const result = await reservationSummariesClient.getAll(params);
     return result.entities;
   }
 
